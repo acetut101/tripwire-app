@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tripwire">
+<meta name="theme-color" content="#F97316">
+<title>Tripwire Electrical</title>
+<script>
+(function(){
+  var m={name:"Tripwire Electrical",short_name:"Tripwire",start_url:".",display:"standalone",background_color:"#F97316",theme_color:"#F97316",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAMeSURBVHgB7dAxAQAAAMKg9U9tCy+gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMAAAD//2MAAQABAAGRAh8AAAAASUVORK5CYII=",sizes:"192x192",type:"image/png"}]};
+  var b=new Blob([JSON.stringify(m)],{type:"application/manifest+json"});
+  var l=document.createElement("link");
+  l.rel="manifest";
+  l.href=URL.createObjectURL(b);
+  document.head.appendChild(l);
+})();
+</script>
+<style>
+  :root {
+    --orange: #F97316;
+    --orange-dark: #C2410C;
+    --orange-light: #FFF7ED;
+    --orange-mid: #FFEDD5;
+    --gray-900: #111827;
+    --gray-700: #374151;
+    --gray-500: #6B7280;
+    --gray-300: #D1D5DB;
+    --gray-100: #F3F4F6;
+    --white: #FFFFFF;
+    --green: #16A34A;
+    --green-light: #DCFCE7;
+    --red: #DC2626;
+    --red-light: #FEE2E2;
+    --amber: #D97706;
+    --amber-light: #FEF3C7;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--gray-100);
+    color: var(--gray-900);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    background: var(--orange);
+    color: white;
+    padding: 16px 20px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .header p { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .sync-badge {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .sync-badge.has-pending { background: rgba(255,255,255,0.35); }
+
+  /* Screen management */
+  .screen { display: none; padding: 20px; }
+  .screen.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+
+  /* Form elements */
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 6px;
+  }
+  input[type="text"],
+  input[type="date"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    color: var(--gray-900);
+    background: white;
+    margin-bottom: 14px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--orange);
+  }
+  textarea { resize: none; min-height: 80px; }
+
+  /* Checklist items */
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item input[type="checkbox"] { display: none; }
+  .check-box {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--gray-300);
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all 0.15s;
+  }
+  .check-item.checked .check-box {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .check-item.checked .check-box::after {
+    content: '';
+    width: 10px;
+    height: 6px;
+    border: 2px solid white;
+    border-top: none;
+    border-right: none;
+    transform: rotate(-45deg) translateY(-1px);
+    display: block;
+  }
+  .check-label { font-size: 15px; color: var(--gray-700); line-height: 1.4; }
+  .check-item.checked .check-label { color: var(--gray-500); }
+
+  /* Radio options */
+  .radio-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .radio-opt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .radio-opt.selected {
+    border-color: var(--orange);
+    background: var(--orange-light);
+  }
+  .radio-dot {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--gray-300);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .radio-opt.selected .radio-dot {
+    border-color: var(--orange);
+  }
+  .radio-opt.selected .radio-dot::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: var(--orange);
+    border-radius: 50%;
+    display: block;
+  }
+  .radio-text { font-size: 15px; color: var(--gray-700); }
+
+  /* Photo capture */
+  .photo-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px;
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius-sm);
+    background: var(--gray-100);
+    color: var(--gray-500);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.15s;
+  }
+  .photo-btn:active { background: var(--gray-300); }
+  .photo-btn.captured { border-color: var(--green); background: var(--green-light); color: var(--green); }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .photo-thumb {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--gray-200);
+    position: relative;
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-count {
+    font-size: 13px;
+    color: var(--green);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  /* Signature */
+  .sig-canvas {
+    width: 100%;
+    height: 160px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    background: white;
+    touch-action: none;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .sig-clear {
+    font-size: 13px;
+    color: var(--orange);
+    cursor: pointer;
+    text-align: right;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  /* Buttons */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 10px;
+  }
+  .btn-primary { background: var(--orange); color: white; }
+  .btn-primary:active { background: var(--orange-dark); }
+  .btn-primary:disabled { background: var(--gray-300); color: var(--gray-500); }
+  .btn-secondary { background: var(--gray-100); color: var(--gray-700); border: 1.5px solid var(--gray-300); }
+  .btn-secondary:active { background: var(--gray-200); }
+  .btn-danger { background: var(--red-light); color: var(--red); }
+
+  /* Progress bar */
+  .progress-wrap { background: rgba(255,255,255,0.3); border-radius: 10px; height: 4px; margin-top: 10px; }
+  .progress-bar { background: white; border-radius: 10px; height: 4px; transition: width 0.3s; }
+  .step-label { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 6px; }
+
+  /* Job list */
+  .job-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-left: 4px solid var(--gray-300);
+  }
+  .job-card.in-progress { border-left-color: var(--orange); }
+  .job-card.complete { border-left-color: var(--green); }
+  .job-card.pending-sync { border-left-color: var(--amber); }
+  .job-num { font-size: 16px; font-weight: 700; color: var(--gray-900); }
+  .job-client { font-size: 14px; color: var(--gray-500); margin-top: 2px; }
+  .job-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .status-progress { background: var(--orange-mid); color: var(--orange-dark); }
+  .status-complete { background: var(--green-light); color: var(--green); }
+  .status-pending { background: var(--amber-light); color: var(--amber); }
+  .status-new { background: var(--gray-100); color: var(--gray-500); }
+
+  /* Info box */
+  .info-box {
+    background: var(--orange-light);
+    border: 1px solid #FDBA74;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--orange-dark);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .warn-box {
+    background: var(--amber-light);
+    border: 1px solid #FDE68A;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 14px;
+    color: #92400E;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  /* Section divider */
+  .section-head {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--gray-500);
+    margin: 20px 0 10px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--gray-900);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform 0.3s;
+    white-space: nowrap;
+    max-width: 90vw;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Complete screen */
+  .complete-icon {
+    width: 72px;
+    height: 72px;
+    background: var(--green-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 36px;
+  }
+  .complete-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+  .complete-sub { font-size: 15px; color: var(--gray-500); text-align: center; margin-bottom: 24px; line-height: 1.5; }
+
+  input[type="file"] { display: none; }
+
+  .field-group { margin-bottom: 4px; }
+
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    cursor: pointer;
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>⚡ Tripwire Electrical</h1>
+      <p id="header-sub">Job Management</p>
+    </div>
+    <div class="sync-badge" id="sync-btn" onclick="attemptSync()">
+      <span id="sync-label">Synced</span>
+    </div>
+  </div>
+  <div class="progress-wrap" id="progress-wrap" style="display:none">
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+  </div>
+  <div class="step-label" id="step-label"></div>
+</div>
+
+<!-- SCREEN: Home / Job List -->
+<div class="screen active" id="screen-home">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <div style="font-size:20px;font-weight:700">Jobs</div>
+      <div style="font-size:13px;color:var(--gray-500)" id="today-date"></div>
+    </div>
+    <button class="btn btn-primary" style="width:auto;padding:10px 18px;margin:0" onclick="showScreen('screen-new-job')">+ New Job</button>
+  </div>
+
+  <div id="job-list">
+    <div style="text-align:center;padding:40px 20px;color:var(--gray-500)">
+      <div style="font-size:40px;margin-bottom:12px">📋</div>
+      <div style="font-size:16px;font-weight:500;margin-bottom:6px">No jobs yet</div>
+      <div style="font-size:14px">Tap + New Job to start</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: New Job Setup -->
+<div class="screen" id="screen-new-job">
+  <div class="card">
+    <div class="card-title">Job Details</div>
+    <div class="field-group">
+      <label>Job number</label>
+      <input type="text" id="nj-number" placeholder="e.g. TWE-2026-001">
+    </div>
+    <div class="field-group">
+      <label>Client name</label>
+      <input type="text" id="nj-client" placeholder="Smith Residence">
+    </div>
+    <div class="field-group">
+      <label>Site address</label>
+      <input type="text" id="nj-address" placeholder="14 Example St, Buderim">
+    </div>
+    <div class="field-group">
+      <label>Job type</label>
+      <select id="nj-type">
+        <option value="">Select job type...</option>
+        <option>Solar install</option>
+        <option>Battery storage</option>
+        <option>Solar + battery</option>
+        <option>Switchboard upgrade</option>
+        <option>General electrical</option>
+        <option>EV charger</option>
+        <option>Commercial electrical</option>
+        <option>Fault find</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label>Date</label>
+      <input type="date" id="nj-date">
+    </div>
+    <div class="field-group">
+      <label>Staff on site</label>
+      <input type="text" id="nj-staff" placeholder="e.g. Jake, Chris">
+    </div>
+    <button class="btn btn-primary" onclick="createJob()">Start Pre-Start</button>
+    <button class="btn btn-secondary" onclick="showScreen('screen-home')">Cancel</button>
+  </div>
+</div>
+
+<!-- SCREEN: Pre-Start Checklist -->
+<div class="screen" id="screen-prestart">
+  <div class="card">
+    <div class="card-title">Pre-Start Checklist</div>
+    <div class="info-box">Complete all items before work begins. Discuss any issues as a team.</div>
+    <div id="prestart-items"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Site Hazard Notes</div>
+    <label>Any site-specific hazards to note?</label>
+    <textarea id="prestart-hazards" placeholder="e.g. uneven roof, asbestos suspected, dog on property..."></textarea>
+  </div>
+  <button class="btn btn-primary" id="prestart-next-btn" onclick="completePreStart()" disabled>Proceed to Take 5</button>
+</div>
+
+<!-- SCREEN: Take 5 -->
+<div class="screen" id="screen-take5">
+  <div class="card">
+    <div class="card-title">Take 5</div>
+    <div class="info-box">Stop. Think. Identify risks before you touch anything.</div>
+    <div id="take5-items"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">SWMS Required?</div>
+    <div class="radio-group" id="swms-radio">
+      <div class="radio-opt" onclick="selectSwms('yes')">
+        <div class="radio-dot" id="swms-dot-yes"></div>
+        <span class="radio-text">Yes — select SWMS below</span>
+      </div>
+      <div class="radio-opt" onclick="selectSwms('no')">
+        <div class="radio-dot" id="swms-dot-no"></div>
+        <span class="radio-text">No — low risk, not required</span>
+      </div>
+    </div>
+    <div id="swms-selector" style="display:none">
+      <label>Select applicable SWMS</label>
+      <select id="swms-type">
+        <option value="">Choose SWMS...</option>
+        <option>General domestic electrical</option>
+        <option>Commercial electrical</option>
+        <option>Solar and battery installation</option>
+        <option>Live work / testing</option>
+        <option>Working at heights</option>
+        <option>Plant / excavator on site</option>
+      </select>
+      <div class="info-box" id="swms-confirm-box" style="display:none">
+        ✓ SWMS selected. All staff on site must acknowledge they have read and understood this SWMS before proceeding.
+      </div>
+      <div id="swms-sign-items"></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="take5-next-btn" onclick="completeTake5()" disabled>Proceed to Pre-Job Photos</button>
+</div>
+
+<!-- SCREEN: Pre-Job Photos -->
+<div class="screen" id="screen-photos-pre">
+  <div class="card">
+    <div class="card-title">Pre-Job Photos</div>
+    <div class="info-box">Capture site condition before work starts. These protect you and the client.</div>
+
+    <label>Work area / site overview</label>
+    <div class="photo-btn" id="btn-site" onclick="capturePhoto('site', 'btn-site')">📷 Photograph work area</div>
+
+    <label>Switchboard — before</label>
+    <div class="photo-btn" id="btn-board" onclick="capturePhoto('board', 'btn-board')">📷 Photograph switchboard</div>
+
+    <label>Any existing damage to property</label>
+    <div class="photo-btn" id="btn-damage" onclick="capturePhoto('damage', 'btn-damage')">📷 Photograph any existing damage</div>
+
+    <div id="pre-photo-grid" class="photo-grid"></div>
+    <div id="pre-photo-count" class="photo-count" style="display:none"></div>
+  </div>
+  <div class="warn-box">At least the switchboard photo is required to proceed.</div>
+  <button class="btn btn-primary" id="photos-pre-next-btn" onclick="completePrePhotos()" disabled>Start Job</button>
+  <input type="file" id="photo-input" accept="image/*" capture="environment">
+</div>
+
+<!-- SCREEN: Job In Progress -->
+<div class="screen" id="screen-in-progress">
+  <div class="card">
+    <div class="card-title">Job In Progress</div>
+    <div id="progress-job-info" style="font-size:15px;color:var(--gray-700);margin-bottom:16px;line-height:1.6"></div>
+    <div class="info-box">Job clocked on. Log time and materials in Tradify as you go.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Progress Photos</div>
+    <div class="photo-btn" onclick="capturePhoto('progress', 'btn-progress')" id="btn-progress">📷 Add progress photo</div>
+    <div id="progress-photo-grid" class="photo-grid"></div>
+    <div id="progress-photo-count" class="photo-count" style="display:none"></div>
+  </div>
+
+  <div class="card" id="labelling-card">
+    <div class="card-title">Labelling Checklist</div>
+    <div class="info-box">Complete applicable labels. Delegate to any staff on site.</div>
+    <div id="labelling-items"></div>
+  </div>
+
+  <button class="btn btn-primary" onclick="showScreen('screen-completion')">Proceed to Completion</button>
+</div>
+
+<!-- SCREEN: Completion -->
+<div class="screen" id="screen-completion">
+  <div class="card">
+    <div class="card-title">Completion Checklist</div>
+    <div id="completion-items"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Completion Photos</div>
+    <div class="photo-btn" id="btn-comp-work" onclick="capturePhoto('comp-work', 'btn-comp-work')">📷 Completed work</div>
+    <div class="photo-btn" id="btn-comp-board" onclick="capturePhoto('comp-board', 'btn-comp-board')">📷 Switchboard — after</div>
+    <div id="comp-photo-grid" class="photo-grid"></div>
+    <div id="comp-photo-count" class="photo-count" style="display:none"></div>
+  </div>
+
+  <div class="card" id="test-card">
+    <div class="card-title">Testing Documentation</div>
+    <div class="warn-box">Record values where tested. Tick where not applicable.</div>
+    <div id="test-items"></div>
+    <label>Additional test notes</label>
+    <textarea id="test-notes" placeholder="Any additional test results or observations..."></textarea>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Site Owner Training</div>
+    <div id="training-items"></div>
+    <label>Training notes</label>
+    <textarea id="training-notes" placeholder="Any specific instructions given to the site owner..."></textarea>
+  </div>
+
+  <button class="btn btn-primary" id="completion-next-btn" onclick="proceedToSignoff()">Proceed to Customer Sign-Off</button>
+</div>
+
+<!-- SCREEN: Customer Sign-Off -->
+<div class="screen" id="screen-signoff">
+  <div class="card">
+    <div class="card-title">Customer Sign-Off</div>
+    <div class="info-box" style="margin-bottom:16px;line-height:1.6">
+      By signing below, the site owner confirms that all work has been completed to their satisfaction, that no defects or complaints have been identified at the time of signing, and that they agree to pay the outstanding invoice by the due date stated on the invoice.
+    </div>
+    <label>Site owner name</label>
+    <input type="text" id="signoff-name" placeholder="Full name">
+    <label>Signature</label>
+    <canvas class="sig-canvas" id="sig-canvas"></canvas>
+    <span class="sig-clear" onclick="clearSignature()">Clear signature</span>
+    <label>Date</label>
+    <input type="date" id="signoff-date">
+  </div>
+  <button class="btn btn-primary" id="signoff-btn" onclick="completeSignoff()">Complete Job</button>
+</div>
+
+<!-- SCREEN: Complete -->
+<div class="screen" id="screen-complete">
+  <div class="card" style="text-align:center;padding:32px 20px">
+    <div class="complete-icon">✓</div>
+    <div class="complete-title">Job Complete</div>
+    <div class="complete-sub" id="complete-sub">All documentation saved. Job queued for sync.</div>
+    <button class="btn btn-primary" style="margin-top:8px" onclick="showScreen('screen-home')">Back to Jobs</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────────────
+// PASTE YOUR GOOGLE APPS SCRIPT URL HERE:
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyYqlIKR3CZFZnFML86TUIc2ngM5S1fmd0YgSwc-NbQU1E1TroEGIl1PeYPaWGPnca8rg/exec';
+
+// ── State ────────────────────────────────────────────────────────────────────
+let currentJob = null;
+let jobs = [];
+let sigCanvas, sigCtx, sigDrawing = false, sigHasData = false;
+let currentPhotoField = null;
+
+// ── Checklist data ───────────────────────────────────────────────────────────
+const PRESTART_ITEMS = [
+  'Scope of work understood by all staff on site',
+  'Site access confirmed and safe',
+  'PPE checked — safety glasses, gloves, steel caps, hi-vis',
+  'Tools and equipment checked and in safe working order',
+  'Isolation procedure identified and planned',
+  'Emergency contacts and nearest hospital known',
+  'Customer notified of work commencing',
+  'Any underground services or hidden hazards considered',
+  'Work area secured from public and non-essential personnel',
+  'Environmental conditions acceptable to proceed'
+];
+
+const TAKE5_ITEMS = [
+  'Think — have I done this task before? What could go wrong?',
+  'Identify — what are the hazards specific to this job right now?',
+  'Assess — what is the risk level of each hazard?',
+  'Control — what controls are in place to manage each risk?',
+  'Proceed — I am satisfied it is safe to start work'
+];
+
+const SWMS_STAFF = ['Staff 1', 'Staff 2', 'Staff 3'];
+
+const LABELLING_ITEMS = [
+  'All circuit breakers labelled correctly',
+  'Solar isolators labelled (DC and AC)',
+  'Battery isolators labelled',
+  'Generation meter labelled',
+  'Solar array label on switchboard',
+  'Warning labels installed where required',
+  'Conduit and cable tray labelled',
+  'EV charger circuit labelled'
+];
+
+const COMPLETION_ITEMS = [
+  'All work completed to quoted scope',
+  'Site left clean — no rubbish or offcuts remaining',
+  'All tools and equipment removed from site',
+  'MEN (Main Earth) reinstated and tested',
+  'Switchboard closed and secured',
+  'All covers and blanks reinstated',
+  'No damage to property caused during works',
+  'Customer has been advised of any variations from scope'
+];
+
+const TEST_ITEMS = [
+  { label: 'RCD trip time tested', hasValue: true, unit: 'ms' },
+  { label: 'Insulation resistance test', hasValue: true, unit: 'MΩ' },
+  { label: 'Polarity verified', hasValue: false },
+  { label: 'Continuity of earth verified', hasValue: false },
+  { label: 'Solar system commissioned and producing', hasValue: false },
+  { label: 'Battery system commissioned and cycling', hasValue: false },
+  { label: 'All circuits energised and tested at load', hasValue: false }
+];
+
+const TRAINING_ITEMS = [
+  'System operation explained to site owner',
+  'Monitoring app / portal shown and set up',
+  'Emergency shutdown procedure demonstrated',
+  'Warranty information provided',
+  'Safety requirements explained',
+  'Contact details for service provided'
+];
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadJobs();
+  renderJobList();
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('nj-date').value = new Date().toISOString().split('T')[0];
+  updateSyncBadge();
+  setupServiceWorker();
+  setupPhotoInput();
+});
+
+function setupServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    const sw = `
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+      self.addEventListener('fetch', e => {
+        if (e.request.mode === 'navigate') {
+          e.respondWith(fetch(e.request).catch(() => caches.match('/')));
+        }
+      });
+    `;
+    const blob = new Blob([sw], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url);
+  }
+}
+
+// ── Storage ──────────────────────────────────────────────────────────────────
+function saveJobs() { localStorage.setItem('tw_jobs', JSON.stringify(jobs)); }
+function loadJobs() {
+  try { jobs = JSON.parse(localStorage.getItem('tw_jobs') || '[]'); }
+  catch(e) { jobs = []; }
+}
+
+// ── Screen management ────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+  updateHeader(id);
+}
+
+function updateHeader(screenId) {
+  const subs = {
+    'screen-home': 'Job Management',
+    'screen-new-job': 'New Job',
+    'screen-prestart': 'Step 1 of 5',
+    'screen-take5': 'Step 2 of 5',
+    'screen-photos-pre': 'Step 3 of 5',
+    'screen-in-progress': 'In Progress',
+    'screen-completion': 'Step 4 of 5',
+    'screen-signoff': 'Step 5 of 5',
+    'screen-complete': 'Complete'
+  };
+  const steps = {
+    'screen-prestart': 20, 'screen-take5': 40, 'screen-photos-pre': 60,
+    'screen-in-progress': 70, 'screen-completion': 85, 'screen-signoff': 95, 'screen-complete': 100
+  };
+  document.getElementById('header-sub').textContent = subs[screenId] || '';
+  const pct = steps[screenId];
+  if (pct) {
+    document.getElementById('progress-wrap').style.display = 'block';
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('step-label').textContent = currentJob ? `${currentJob.number} — ${currentJob.client}` : '';
+  } else {
+    document.getElementById('progress-wrap').style.display = 'none';
+    document.getElementById('step-label').textContent = '';
+  }
+}
+
+// ── Job creation ─────────────────────────────────────────────────────────────
+function createJob() {
+  const num = document.getElementById('nj-number').value.trim();
+  const client = document.getElementById('nj-client').value.trim();
+  const address = document.getElementById('nj-address').value.trim();
+  const type = document.getElementById('nj-type').value;
+  const date = document.getElementById('nj-date').value;
+  const staff = document.getElementById('nj-staff').value.trim();
+
+  if (!num || !client || !address || !type) { showToast('Please fill in all required fields'); return; }
+
+  currentJob = {
+    id: Date.now(),
+    number: num, client, address, type, date, staff,
+    status: 'prestart',
+    synced: false,
+    prestart: { items: {}, hazards: '' },
+    take5: { items: {}, swmsRequired: null, swmsType: '', swmsSignatures: {} },
+    photos: { pre: [], progress: [], completion: [] },
+    labelling: {},
+    completion: { items: {}, testItems: {}, testValues: {}, testNotes: '', training: {}, trainingNotes: '' },
+    signoff: { name: '', signature: '', date: '' },
+    createdAt: new Date().toISOString()
+  };
+
+  jobs.push(currentJob);
+  saveJobs();
+  buildPreStart();
+  showScreen('screen-prestart');
+}
+
+// ── Pre-Start ────────────────────────────────────────────────────────────────
+function buildPreStart() {
+  const el = document.getElementById('prestart-items');
+  el.innerHTML = PRESTART_ITEMS.map((item, i) => `
+    <div class="check-item" id="pre-${i}" onclick="toggleCheck('prestart','items',${i},'pre-${i}','prestart-next-btn',${PRESTART_ITEMS.length})">
+      <div class="check-box"></div>
+      <span class="check-label">${item}</span>
+    </div>`).join('');
+}
+
+function completePreStart() {
+  currentJob.prestart.hazards = document.getElementById('prestart-hazards').value;
+  currentJob.status = 'take5';
+  saveJobs();
+  buildTake5();
+  showScreen('screen-take5');
+}
+
+// ── Take 5 ───────────────────────────────────────────────────────────────────
+function buildTake5() {
+  const el = document.getElementById('take5-items');
+  el.innerHTML = TAKE5_ITEMS.map((item, i) => `
+    <div class="check-item" id="t5-${i}" onclick="toggleTake5(${i})">
+      <div class="check-box"></div>
+      <span class="check-label">${item}</span>
+    </div>`).join('');
+}
+
+function toggleTake5(i) {
+  toggleCheck('take5', 'items', i, `t5-${i}`, null, TAKE5_ITEMS.length);
+  checkTake5Btn();
+}
+
+function checkTake5Btn() {
+  const allChecked = Object.keys(currentJob.take5.items).length === TAKE5_ITEMS.length &&
+    Object.values(currentJob.take5.items).every(v => v);
+  const swmsAnswered = currentJob.take5.swmsRequired !== null;
+  const swmsOk = currentJob.take5.swmsRequired === 'no' ||
+    (currentJob.take5.swmsRequired === 'yes' && currentJob.take5.swmsType);
+  document.getElementById('take5-next-btn').disabled = !(allChecked && swmsAnswered && swmsOk);
+}
+
+function selectSwms(val) {
+  currentJob.take5.swmsRequired = val;
+  document.querySelectorAll('#swms-radio .radio-opt').forEach((el, i) => {
+    el.classList.toggle('selected', (i === 0 && val === 'yes') || (i === 1 && val === 'no'));
+  });
+  document.getElementById('swms-selector').style.display = val === 'yes' ? 'block' : 'none';
+  checkTake5Btn();
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'swms-type') {
+    currentJob.take5.swmsType = e.target.value;
+    document.getElementById('swms-confirm-box').style.display = e.target.value ? 'block' : 'none';
+    checkTake5Btn();
+  }
+});
+
+function completeTake5() {
+  currentJob.status = 'photos-pre';
+  saveJobs();
+  showScreen('screen-photos-pre');
+}
+
+// ── Photos ───────────────────────────────────────────────────────────────────
+function setupPhotoInput() {
+  const input = document.getElementById('photo-input');
+  input.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file || !currentPhotoField) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 1200;
+        let w = img.width, h = img.height;
+        if (w > MAX) { h = h * MAX / w; w = MAX; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.75);
+        const [field, btnId, gridId, countId] = currentPhotoField;
+        currentJob.photos[field].push(compressed);
+        saveJobs();
+        updatePhotoUI(field, btnId, gridId, countId);
+        checkPhotoBtn(field);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  });
+}
+
+function capturePhoto(field, btnId) {
+  const map = {
+    'site': ['pre', 'btn-site', 'pre-photo-grid', 'pre-photo-count'],
+    'board': ['pre', 'btn-board', 'pre-photo-grid', 'pre-photo-count'],
+    'damage': ['pre', 'btn-damage', 'pre-photo-grid', 'pre-photo-count'],
+    'progress': ['progress', 'btn-progress', 'progress-photo-grid', 'progress-photo-count'],
+    'comp-work': ['completion', 'btn-comp-work', 'comp-photo-grid', 'comp-photo-count'],
+    'comp-board': ['completion', 'btn-comp-board', 'comp-photo-grid', 'comp-photo-count'],
+  };
+  currentPhotoField = map[field];
+  document.getElementById('photo-input').click();
+}
+
+function updatePhotoUI(field, btnId, gridId, countId) {
+  const photos = currentJob.photos[field];
+  const countEl = document.getElementById(countId);
+  if (countEl) { countEl.style.display = photos.length ? 'block' : 'none'; countEl.textContent = `${photos.length} photo${photos.length > 1 ? 's' : ''} captured`; }
+  const grid = document.getElementById(gridId);
+  if (grid) { grid.innerHTML = photos.slice(-6).map(p => `<div class="photo-thumb"><img src="${p}"></div>`).join(''); }
+}
+
+function checkPhotoBtn(field) {
+  if (field === 'pre') {
+    document.getElementById('photos-pre-next-btn').disabled = currentJob.photos.pre.length < 1;
+  }
+}
+
+function completePrePhotos() {
+  currentJob.status = 'in-progress';
+  currentJob.startedAt = new Date().toISOString();
+  saveJobs();
+  renderJobList();
+  buildInProgress();
+  showScreen('screen-in-progress');
+}
+
+// ── In Progress ──────────────────────────────────────────────────────────────
+function buildInProgress() {
+  document.getElementById('progress-job-info').innerHTML =
+    `<strong>${currentJob.number}</strong> — ${currentJob.client}<br>${currentJob.address}<br>${currentJob.type}`;
+
+  const el = document.getElementById('labelling-items');
+  el.innerHTML = LABELLING_ITEMS.map((item, i) => `
+    <div class="check-item" id="lab-${i}" onclick="toggleCheck('labelling',null,${i},'lab-${i}',null,null)">
+      <div class="check-box"></div>
+      <span class="check-label">${item}</span>
+    </div>`).join('');
+}
+
+// ── Completion ───────────────────────────────────────────────────────────────
+function buildCompletion() {
+  // Completion checklist
+  const cel = document.getElementById('completion-items');
+  cel.innerHTML = COMPLETION_ITEMS.map((item, i) => `
+    <div class="check-item" id="comp-${i}" onclick="toggleCheck('completion','items',${i},'comp-${i}','completion-next-btn',COMPLETION_ITEMS.length)">
+      <div class="check-box"></div>
+      <span class="check-label">${item}</span>
+    </div>`).join('');
+
+  // Test items
+  const tel = document.getElementById('test-items');
+  tel.innerHTML = TEST_ITEMS.map((item, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-100)">
+      <div class="check-item" id="test-${i}" style="flex:1;padding:0;border:none;margin:0"
+        onclick="toggleCheck('completion','testItems',${i},'test-${i}',null,null)">
+        <div class="check-box"></div>
+        <span class="check-label">${item.label}</span>
+      </div>
+      ${item.hasValue ? `<input type="text" placeholder="${item.unit}" style="width:70px;margin:0;padding:8px;font-size:14px" oninput="currentJob.completion.testValues[${i}]=this.value;saveJobs()">` : ''}
+    </div>`).join('');
+
+  // Training
+  const trel = document.getElementById('training-items');
+  trel.innerHTML = TRAINING_ITEMS.map((item, i) => `
+    <div class="check-item" id="train-${i}" onclick="toggleCheck('completion','training',${i},'train-${i}',null,null)">
+      <div class="check-box"></div>
+      <span class="check-label">${item}</span>
+    </div>`).join('');
+}
+
+function proceedToSignoff() {
+  currentJob.completion.testNotes = document.getElementById('test-notes').value;
+  currentJob.completion.trainingNotes = document.getElementById('training-notes').value;
+  saveJobs();
+  setupSignature();
+  document.getElementById('signoff-date').value = new Date().toISOString().split('T')[0];
+  showScreen('screen-signoff');
+}
+
+// ── Signature ────────────────────────────────────────────────────────────────
+function setupSignature() {
+  sigCanvas = document.getElementById('sig-canvas');
+  sigCtx = sigCanvas.getContext('2d');
+  sigHasData = false;
+
+  // Wait for layout to settle before sizing (fixes Android Chrome canvas bug)
+  setTimeout(() => {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = sigCanvas.getBoundingClientRect();
+    sigCanvas.width = rect.width * dpr;
+    sigCanvas.height = rect.height * dpr;
+    sigCtx.scale(dpr, dpr);
+    sigCtx.strokeStyle = '#111827';
+    sigCtx.lineWidth = 2.5;
+    sigCtx.lineCap = 'round';
+    sigCtx.lineJoin = 'round';
+  }, 100);
+
+  const getPos = e => {
+    const rect = sigCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const src = e.touches ? e.touches[0] : e;
+    return {
+      x: (src.clientX - rect.left),
+      y: (src.clientY - rect.top)
+    };
+  };
+
+  sigCanvas.addEventListener('mousedown', e => { sigDrawing = true; const p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); });
+  sigCanvas.addEventListener('mousemove', e => { if (!sigDrawing) return; const p = getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); sigHasData = true; });
+  sigCanvas.addEventListener('mouseup', () => sigDrawing = false);
+  sigCanvas.addEventListener('mouseleave', () => sigDrawing = false);
+  sigCanvas.addEventListener('touchstart', e => { e.preventDefault(); sigDrawing = true; const p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }, { passive: false });
+  sigCanvas.addEventListener('touchmove', e => { e.preventDefault(); if (!sigDrawing) return; const p = getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); sigHasData = true; }, { passive: false });
+  sigCanvas.addEventListener('touchend', () => { sigDrawing = false; });
+  sigCanvas.addEventListener('touchcancel', () => { sigDrawing = false; });
+}
+
+function clearSignature() {
+  if (sigCtx) { sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); sigHasData = false; }
+}
+
+function completeSignoff() {
+  const name = document.getElementById('signoff-name').value.trim();
+  if (!name) { showToast('Please enter the customer name'); return; }
+  if (!sigHasData) { showToast('Please obtain customer signature'); return; }
+
+  currentJob.signoff.name = name;
+  currentJob.signoff.signature = sigCanvas.toDataURL('image/png', 0.5);
+  currentJob.signoff.date = document.getElementById('signoff-date').value;
+  currentJob.status = 'complete';
+  currentJob.completedAt = new Date().toISOString();
+  saveJobs();
+  renderJobList();
+  updateSyncBadge();
+
+  document.getElementById('complete-sub').textContent =
+    `${currentJob.number} saved. ${navigator.onLine ? 'Syncing to Google Sheets...' : 'Will sync when back online.'}`;
+
+  showScreen('screen-complete');
+
+  if (navigator.onLine) { setTimeout(attemptSync, 1000); }
+}
+
+// ── Generic toggle ────────────────────────────────────────────────────────────
+function toggleCheck(jobKey, subKey, idx, elId, btnId, totalCount) {
+  const target = subKey ? currentJob[jobKey][subKey] : currentJob[jobKey];
+  target[idx] = !target[idx];
+  const el = document.getElementById(elId);
+  if (el) el.classList.toggle('checked', !!target[idx]);
+  saveJobs();
+
+  if (btnId && totalCount) {
+    const checked = Object.values(target).filter(Boolean).length;
+    document.getElementById(btnId).disabled = checked < totalCount;
+  }
+}
+
+// ── Job list render ───────────────────────────────────────────────────────────
+function renderJobList() {
+  const el = document.getElementById('job-list');
+  if (!jobs.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--gray-500)">
+      <div style="font-size:40px;margin-bottom:12px">📋</div>
+      <div style="font-size:16px;font-weight:500;margin-bottom:6px">No jobs yet</div>
+      <div style="font-size:14px">Tap + New Job to start</div></div>`;
+    return;
+  }
+
+  const statusMap = {
+    prestart: ['New', 'status-new'],
+    take5: ['Pre-Start ✓', 'status-progress'],
+    'photos-pre': ['Take 5 ✓', 'status-progress'],
+    'in-progress': ['In Progress', 'status-progress'],
+    completion: ['Completing', 'status-progress'],
+    signoff: ['Sign-off', 'status-progress'],
+    complete: ['Complete', 'status-complete']
+  };
+
+  el.innerHTML = [...jobs].reverse().map(j => {
+    const [label, cls] = statusMap[j.status] || ['Unknown', 'status-new'];
+    const syncDot = !j.synced && j.status === 'complete' ? ' 🔄' : '';
+    const cardCls = j.status === 'complete' ? (j.synced ? 'complete' : 'pending-sync') : 'in-progress';
+    return `<div class="job-card ${cardCls}" onclick="resumeJob(${j.id})">
+      <div>
+        <div class="job-num">${j.number}</div>
+        <div class="job-client">${j.client} · ${j.type}</div>
+      </div>
+      <div class="job-status ${cls}">${label}${syncDot}</div>
+    </div>`;
+  }).join('');
+}
+
+function resumeJob(id) {
+  const job = jobs.find(j => j.id === id);
+  if (!job) return;
+  currentJob = job;
+  const screenMap = {
+    prestart: 'screen-prestart',
+    take5: 'screen-take5',
+    'photos-pre': 'screen-photos-pre',
+    'in-progress': 'screen-in-progress',
+    completion: 'screen-completion',
+    signoff: 'screen-signoff',
+    complete: 'screen-home'
+  };
+  const screen = screenMap[job.status];
+  if (screen === 'screen-home') { showToast('Job already complete'); return; }
+
+  // Rebuild relevant screen
+  if (job.status === 'prestart') buildPreStart();
+  if (job.status === 'take5') buildTake5();
+  if (job.status === 'in-progress') buildInProgress();
+  if (job.status === 'completion') { buildCompletion(); }
+
+  showScreen(screen);
+}
+
+// ── Sync ──────────────────────────────────────────────────────────────────────
+function updateSyncBadge() {
+  const pending = jobs.filter(j => j.status === 'complete' && !j.synced).length;
+  const badge = document.getElementById('sync-btn');
+  const label = document.getElementById('sync-label');
+  if (pending > 0) {
+    label.textContent = `${pending} pending`;
+    badge.classList.add('has-pending');
+  } else {
+    label.textContent = 'Synced ✓';
+    badge.classList.remove('has-pending');
+  }
+}
+
+async function attemptSync() {
+  if (!navigator.onLine) { showToast('No signal — jobs saved locally'); return; }
+  if (!SHEETS_URL || SHEETS_URL.includes('PASTE_YOUR')) {
+    showToast('Add your Sheets URL to enable sync'); return;
+  }
+
+  const pending = jobs.filter(j => j.status === 'complete' && !j.synced);
+  if (!pending.length) { showToast('Nothing to sync'); return; }
+
+  showToast(`Syncing ${pending.length} job${pending.length > 1 ? 's' : ''}...`);
+
+  for (const job of pending) {
+    try {
+      const payload = {
+        jobNumber: job.number,
+        clientName: job.client,
+        address: job.address,
+        jobType: job.type,
+        date: job.date,
+        staff: job.staff,
+        preStartComplete: Object.values(job.prestart.items).every(Boolean) ? 'Yes' : 'Partial',
+        take5Complete: Object.values(job.take5.items).every(Boolean) ? 'Yes' : 'Partial',
+        swmsSelected: job.take5.swmsType || (job.take5.swmsRequired === 'no' ? 'Not required' : ''),
+        completionComplete: Object.values(job.completion.items).every(Boolean) ? 'Yes' : 'Partial',
+        signOffName: job.signoff.name,
+        photoCount: job.photos.pre.length + job.photos.progress.length + job.photos.completion.length
+      };
+
+      const res = await fetch(SHEETS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      // no-cors returns opaque response — assume success if no exception thrown
+      job.synced = true;
+      job.syncedAt = new Date().toISOString();
+      saveJobs();
+    } catch (e) {
+      console.error('Sync error:', e);
+    }
+  }
+
+  renderJobList();
+  updateSyncBadge();
+  const synced = pending.filter(j => j.synced).length;
+  showToast(synced === pending.length ? `✓ ${synced} job${synced > 1 ? 's' : ''} synced` : 'Some jobs failed to sync');
+}
+
+window.addEventListener('online', () => { showToast('Back online — syncing...'); setTimeout(attemptSync, 500); });
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Build completion screen on navigate ──────────────────────────────────────
+document.getElementById('screen-completion').addEventListener('transitionend', () => {});
+const origShowScreen = showScreen;
+
+// Override to build completion when navigating there
+window.showScreen = function(id) {
+  if (id === 'screen-completion') buildCompletion();
+  origShowScreen(id);
+};
+</script>
+</body>
+</html>
