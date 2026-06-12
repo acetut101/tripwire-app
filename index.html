@@ -210,6 +210,23 @@ input[type="file"]{display:none;}
   </div>
 </div>
 
+
+<!-- SCREEN: Client Detail -->
+<div class="screen" id="screen-client-detail">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div>
+      <div style="font-size:18px;font-weight:700" id="cd-name"></div>
+      <div style="font-size:12px;color:var(--gray-500)" id="cd-address"></div>
+    </div>
+    <button class="btn btn-primary btn-sm" id="cd-new-job-btn" onclick="newJobForClient()">+ New Job</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Job history</div>
+    <div id="cd-job-list"></div>
+  </div>
+  <button class="btn btn-secondary" onclick="navTo('clients')">Back to clients</button>
+</div>
+
 <!-- SCREEN: New Job Warning -->
 <div class="screen" id="screen-new-job-warn">
   <div class="card">
@@ -1239,6 +1256,75 @@ function completeSignoff() {
   if (navigator.onLine) setTimeout(attemptSync, 800);
 }
 
+
+// ── Client detail ──────────────────────────────────────────────────────────────
+let currentClientNum = null;
+
+function openClient(num, name, address) {
+  currentClientNum = num;
+  document.getElementById('cd-name').textContent = name;
+  document.getElementById('cd-address').textContent = address;
+
+  const clientJobs = jobs.filter(j => j.number && (j.number.startsWith(num + '-')));
+  const el = document.getElementById('cd-job-list');
+  if (!clientJobs.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray-500);font-size:14px">No jobs yet for this client</div>';
+  } else {
+    const statusMap = { scheduled:'pill-blue', prestart:'pill-orange', take5:'pill-orange', 'photos-pre':'pill-orange', 'in-progress':'pill-orange', completion:'pill-orange', signoff:'pill-orange', complete:'pill-green' };
+    el.innerHTML = [...clientJobs].reverse().map(j => {
+      const cls = statusMap[j.status] || 'pill-gray';
+      const label = j.status === 'complete' ? 'Complete' : j.status === 'scheduled' ? 'Scheduled' : 'In progress';
+      return `<div class="list-item">
+        <div><div class="list-item-main">${j.number}</div><div class="list-item-sub">${formatDate(j.date)} · ${j.type || ''}</div></div>
+        <div class="status-pill ${cls}">${label}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Update nav without changing bottom nav active state
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-client-detail').classList.add('active');
+  document.getElementById('header-sub').textContent = 'Client ' + num;
+  document.getElementById('progress-wrap').style.display = 'none';
+  window.scrollTo(0,0);
+}
+
+function newJobForClient() {
+  // Pre-select this client in the new job form
+  populateClientDropdown();
+  buildStaffChips();
+  document.getElementById('nj-date').value = new Date().toISOString().split('T')[0];
+
+  // Select the client in the dropdown
+  const sel = document.getElementById('nj-client');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === currentClientNum) {
+      sel.selectedIndex = i;
+      break;
+    }
+  }
+  onClientSelect();
+
+  // Check 5-day warning
+  const today = new Date(); today.setHours(0,0,0,0);
+  const in5 = new Date(today); in5.setDate(in5.getDate() + 5);
+  const upcoming = jobs.filter(j => {
+    if (!j.date) return false;
+    const d = new Date(j.date); d.setHours(0,0,0,0);
+    return d >= today && d <= in5 && j.status !== 'complete';
+  });
+
+  if (upcoming.length > 0) {
+    document.getElementById('warn-message').textContent = `There are ${upcoming.length} job${upcoming.length > 1 ? 's' : ''} already scheduled in the next 5 days. Please confirm this is not one of them.`;
+    document.getElementById('warn-job-list').innerHTML = upcoming.map(j =>
+      `<div class="list-item"><div><div class="list-item-main">${j.number} — ${j.clientName}</div><div class="list-item-sub">${formatDate(j.date)} · ${j.type || ''}</div></div><div class="list-badge">${formatDate(j.date)}</div></div>`
+    ).join('');
+    showScreen('screen-new-job-warn');
+  } else {
+    showScreen('screen-new-job');
+  }
+}
+
 // ── Client list ────────────────────────────────────────────────────────────────
 function renderClientList() {
   const el = document.getElementById('client-list');
@@ -1247,10 +1333,11 @@ function renderClientList() {
     const num = c['Client Number'] || c.clientNumber || '';
     const name = c['Client Name'] || c.clientName || '';
     const address = c['Address'] || c.address || '';
-    const jobCount = jobs.filter(j => j.number && j.number.startsWith(num + '-')).length;
-    return `<div class="list-item">
-      <div><div class="list-item-main">${name}</div><div class="list-item-sub">${address}</div><div class="list-item-sub">${jobCount} job${jobCount !== 1 ? 's' : ''}</div></div>
-      <div class="list-badge">${num}</div>
+    const paddedNum = String(parseInt(num) || 0).padStart(3,'0');
+    const jobCount = jobs.filter(j => j.number && (j.number.startsWith(paddedNum + '-') || j.number.startsWith(num + '-'))).length;
+    return `<div class="list-item" style="cursor:pointer" onclick="openClient('${paddedNum}','${name.replace(/'/g,"\\'")}','${address.replace(/'/g,"\\'")}')"  >
+      <div><div class="list-item-main">${name}</div><div class="list-item-sub">${address}</div><div class="list-item-sub" style="color:${jobCount>0?'var(--green)':'var(--gray-500)'}">${jobCount} job${jobCount !== 1 ? 's' : ''}</div></div>
+      <div class="list-badge">${paddedNum}</div>
     </div>`;
   }).join('');
 }
