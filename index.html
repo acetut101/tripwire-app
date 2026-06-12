@@ -263,6 +263,21 @@ input[type="file"]{display:none;}
   <button class="btn btn-secondary" onclick="navTo('clients')">Back to clients</button>
 </div>
 
+<!-- SCREEN: Start Scheduled Job -->
+<div class="screen" id="screen-start-job">
+  <div class="card">
+    <div class="card-title">Job details</div>
+    <div id="sj-info"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Staff on site</div>
+    <div class="info-box">Select everyone working on this job today.</div>
+    <div class="staff-chips" id="sj-staff-chips"></div>
+  </div>
+  <button class="btn btn-primary" onclick="confirmStartJob()">Start Pre-Start</button>
+  <button class="btn btn-secondary" onclick="navTo('jobs')">Cancel</button>
+</div>
+
 <!-- SCREEN: New Job Warning -->
 <div class="screen" id="screen-new-job-warn">
   <div class="card">
@@ -836,6 +851,37 @@ function openJob(id) {
 
 function startExistingJob(job) {
   currentJob = job;
+
+  // Build the info display
+  const infoEl = document.getElementById('sj-info');
+  const rows = [
+    ['Job number', job.number],
+    ['Client', job.clientName],
+    ['Address', job.address],
+    ['Job type', job.type],
+    ['Date', job.date ? formatDate(job.date) : '—'],
+  ].filter(([,v]) => v);
+
+  infoEl.innerHTML = rows.map(([label, val]) =>
+    `<div class="list-item">
+      <div class="list-item-sub" style="min-width:90px">${label}</div>
+      <div class="list-item-main" style="text-align:right">${val}</div>
+    </div>`
+  ).join('');
+
+  // Build staff chips
+  const chipsEl = document.getElementById('sj-staff-chips');
+  chipsEl.innerHTML = staffList.map(s => {
+    const name = s['Name'] || s.name || '';
+    return `<div class="staff-chip" onclick="this.classList.toggle('selected')">${name}</div>`;
+  }).join('') + `<div class="staff-chip add-new" onclick="showAddStaffModal()">+ Add</div>`;
+
+  showScreen('screen-start-job');
+}
+
+function confirmStartJob() {
+  const selected = Array.from(document.querySelectorAll('#sj-staff-chips .staff-chip.selected')).map(el => el.textContent);
+  currentJob.selectedStaff = selected;
   currentJob.status = 'prestart';
   if (!currentJob.prestart) currentJob.prestart = {items:{},hazards:''};
   if (!currentJob.take5) currentJob.take5 = {items:{},hazardsFound:null,hazardDetail:'',swmsType:'',swmsSignatures:{}};
@@ -843,7 +889,6 @@ function startExistingJob(job) {
   if (!currentJob.labelling) currentJob.labelling = {};
   if (!currentJob.completion) currentJob.completion = {items:{},testItems:{},testValues:{},testNotes:'',training:{},trainingNotes:''};
   if (!currentJob.signoff) currentJob.signoff = {name:'',signature:'',date:''};
-  if (!currentJob.selectedStaff) currentJob.selectedStaff = [];
   saveLocal();
   buildPreStart();
   showScreen('screen-prestart');
