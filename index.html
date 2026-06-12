@@ -822,19 +822,25 @@ function renderJobList() {
     const [label, cls] = statusMap[j.status] || ['Unknown','pill-gray'];
     const syncDot = !j.synced && j.status === 'complete' ? ' 🔄' : '';
     const cardCls = j.status === 'complete' ? (j.synced ? 'complete' : 'pending-sync') : j.status === 'scheduled' ? 'scheduled' : 'in-progress';
-    return `<div class="job-card ${cardCls}" onclick="openJob(${JSON.stringify(j.id)})">
-      <div>
+    return `<div class="job-card ${cardCls}" data-jobid="${j.id}" onclick="openJobCard(this)">
+      <div style="flex:1">
         <div class="job-num">${j.number}</div>
-        <div class="job-meta">${j.clientName || 'Unknown client'} · ${j.type || ''}</div>
+        <div class="job-meta">${j.clientName || 'Unknown client'}${j.type ? ' · ' + j.type : ''}</div>
         <div class="job-meta">${formatDate(j.date)}</div>
+        ${j.status === 'scheduled' ? '<div class="job-meta" style="color:#60A5FA;margin-top:3px;font-size:11px">Tap to start →</div>' : ''}
       </div>
       <div class="status-pill ${cls}">${label}${syncDot}</div>
     </div>`;
   }).join('');
 }
 
+function openJobCard(el) {
+  const id = el.getAttribute('data-jobid');
+  openJob(id);
+}
+
 function openJob(id) {
-  const job = jobs.find(j => j.id === id);
+  const job = jobs.find(j => j.id === id || j.id === String(id));
   if (!job) return;
   if (job.status === 'complete') { showToast('Job complete — ' + (job.synced ? 'synced ✓' : 'pending sync')); return; }
   if (job.status === 'scheduled') { startExistingJob(job); return; }
@@ -1593,9 +1599,9 @@ async function attemptSync() {
   if (!SHEETS_URL || SHEETS_URL.includes('PASTE_YOUR')) { showToast('Add your Sheets URL to enable sync'); return; }
 
   const pending = jobs.filter(j => j.status === 'complete' && !j.synced);
-  if (!pending.length) { showToast('Nothing to sync'); fetchSheetData(); return; }
+  if (!pending.length) { showToast('Nothing to sync — refreshing...'); fetchSheetData(); return; }
 
-  showToast(`Syncing ${pending.length} job${pending.length !== 1 ? 's' : ''}...`);
+  showToast(`Syncing ${pending.length} job${pending.length !== 1 ? 's' : ''}...`, 5000);
 
   for (const job of pending) {
     try {
@@ -1630,10 +1636,11 @@ async function attemptSync() {
   // Keep fromSheet jobs — they will be refreshed by fetchSheetData
   jobs = jobs.filter(j => !(j.synced && !j.fromSheet));
   saveLocal();
+  const syncedCount = pending.length;
   renderJobList();
   updateSyncBadge();
-  showToast(`✓ Synced`);
-  fetchSheetData();
+  showToast(`✓ ${syncedCount} job${syncedCount !== 1 ? 's' : ''} synced to sheet`);
+  setTimeout(fetchSheetData, 1000);
 }
 
 window.addEventListener('online', () => { hideSyncBar(); showToast('Back online — syncing...'); setTimeout(attemptSync, 500); });
