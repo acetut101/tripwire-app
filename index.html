@@ -200,7 +200,7 @@ input[type="file"]{display:none;}
   <div class="header-top">
     <div>
       <h1>⚡ Tripwire Electrical</h1>
-      <div class="header-sub" id="header-sub">Loading...</div>
+      <div class="header-sub" id="header-sub">Job Management</div>
     </div>
     <div class="sync-badge" id="sync-btn" onclick="attemptSync()">
       <span id="sync-label">Sync</span>
@@ -615,6 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderClientList();
   renderStaffList();
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-AU', {weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('header-sub').textContent = 'Job Management';
   updateSyncBadge();
   updateSyncBar();
   setupPhotoInput();
@@ -1379,7 +1380,6 @@ function newJobForClient() {
     return parseInt(j.number.split('-')[0]) === parseInt(currentClientNum);
   }).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
-  const client = clients.find(c => String(parseInt(c['Client Number'] || c.clientNumber)) === String(parseInt(currentClientNum)));
   const lastAddress = clientJobs.length > 0 ? clientJobs[0].address : (client ? (client['Address'] || client.address || '') : '');
   document.getElementById('nj-address').value = lastAddress;
 
