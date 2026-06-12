@@ -845,9 +845,12 @@ function showNewJobModal() {
   // Ensure client dropdown is unlocked when opening from + New Job
   const sel = document.getElementById('nj-client');
   sel.disabled = false;
+  sel.style.display = '';
   sel.style.background = '';
   sel.style.color = '';
   sel.value = '';
+  const lockedEl = document.getElementById('nj-client-locked');
+  if (lockedEl) lockedEl.style.display = 'none';
 
   // Check for jobs in next 5 days
   const today = new Date(); today.setHours(0,0,0,0);
@@ -1355,9 +1358,20 @@ function newJobForClient() {
       break;
     }
   }
-  sel.disabled = true;
-  sel.style.background = 'var(--gray-100)';
-  sel.style.color = 'var(--gray-500)';
+  // Hide the dropdown and show a locked client display instead
+  sel.style.display = 'none';
+  const client = clients.find(c => String(parseInt(c['Client Number'] || c.clientNumber)) === String(parseInt(currentClientNum)));
+  const clientName = client ? (client['Client Name'] || client.clientName || '') : '';
+  const clientNum = currentClientNum;
+  let lockedEl = document.getElementById('nj-client-locked');
+  if (!lockedEl) {
+    lockedEl = document.createElement('div');
+    lockedEl.id = 'nj-client-locked';
+    lockedEl.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border:1.5px solid #2E4060;border-radius:8px;background:#1A2436;margin-bottom:12px;';
+    sel.parentNode.insertBefore(lockedEl, sel.nextSibling);
+  }
+  lockedEl.style.display = 'flex';
+  lockedEl.innerHTML = '<span style="font-size:15px;font-weight:600;color:#FFFFFF">' + clientName + '</span><span style="font-size:11px;font-weight:700;color:#8A9BB8;background:#243044;padding:2px 8px;border-radius:10px;border:1px solid #2E4060">' + String(parseInt(clientNum)).padStart(3,'0') + '</span>';
 
   // Pre-fill address from most recent job for this client, falling back to client record
   const clientJobs = jobs.filter(j => {
