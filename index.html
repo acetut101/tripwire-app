@@ -637,8 +637,8 @@ function loadLocal() {
   try { clients = JSON.parse(localStorage.getItem('tw_clients') || '[]'); } catch(e) { clients = []; }
   try { staffList = JSON.parse(localStorage.getItem('tw_staff') || '[]'); } catch(e) { staffList = []; }
   lastSyncTime = localStorage.getItem('tw_last_sync') || null;
-  // Strip any synced jobs from local cache on load — Sheet is the source of truth
-  jobs = jobs.filter(j => !j.synced);
+  // Strip locally-submitted synced jobs — keep sheet jobs (they reload from sheet)
+  jobs = jobs.filter(j => !(j.synced && !j.fromSheet));
 }
 
 // ── Fetch from Sheet ───────────────────────────────────────────────────────────
@@ -673,11 +673,10 @@ async function fetchSheetData() {
         if (!jobNum) return; // skip empty rows
         const existing = jobs.find(j => j.number === jobNum);
         if (!existing) {
-          const status = rj['Status'];
-          const isSynced = status === 'Synced';
-          // Only import completed jobs if they are synced — skip to avoid re-showing them
-          // Import all non-synced rows as scheduled/actionable
-          if (isSynced) return;
+          const status = (rj['Status'] || '').toString().trim();
+          // Synced = completed jobs, show them as complete but don't re-add to local workflow
+          // Everything else (blank, Scheduled, In Progress) = actionable
+          const isComplete = status === 'Synced';
           jobs.push({
             id: jobNum,
             number: jobNum,
@@ -687,10 +686,9 @@ async function fetchSheetData() {
             type: rj['Job Type'] || '',
             date: rj['Date'] || '',
             staff: rj['Staff'] || '',
-            status: 'scheduled',
-            synced: false,
+            status: isComplete ? 'complete' : 'scheduled',
+            synced: isComplete,
             fromSheet: true,
-            // Preserve any extra fields from sheet
             sheetData: rj
           });
         } else if (existing.fromSheet && existing.status === 'scheduled') {
@@ -1583,8 +1581,9 @@ async function attemptSync() {
     } catch(e) { console.error('Sync error:', e); }
   }
 
-  // Remove synced jobs from local storage immediately — Sheet is the record
-  jobs = jobs.filter(j => !j.synced);
+  // Remove locally-created synced jobs immediately — Sheet is the record
+  // Keep fromSheet jobs — they will be refreshed by fetchSheetData
+  jobs = jobs.filter(j => !(j.synced && !j.fromSheet));
   saveLocal();
   renderJobList();
   updateSyncBadge();
