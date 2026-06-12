@@ -600,6 +600,8 @@ function loadLocal() {
   try { clients = JSON.parse(localStorage.getItem('tw_clients') || '[]'); } catch(e) { clients = []; }
   try { staffList = JSON.parse(localStorage.getItem('tw_staff') || '[]'); } catch(e) { staffList = []; }
   lastSyncTime = localStorage.getItem('tw_last_sync') || null;
+  // Strip any synced jobs from local cache on load — Sheet is the source of truth
+  jobs = jobs.filter(j => !j.synced);
 }
 
 // ── Fetch from Sheet ───────────────────────────────────────────────────────────
@@ -656,7 +658,7 @@ async function fetchSheetData() {
     populateClientDropdown();
     updateSyncBadge();
     updateSyncBar();
-    showToast('✓ Data refreshed from sheet');
+    showToast('✓ Data refreshed from sheet', 2000);
   } catch(e) {
     showSyncBar('stale');
   }
@@ -685,8 +687,9 @@ function updateSyncBar() {
 
 // ── Nav ────────────────────────────────────────────────────────────────────────
 function navTo(tab) {
+  // Hide all screens including overlays
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   ['jobs','clients','staff'].forEach(t => {
-    document.getElementById('screen-' + t).classList.remove('active');
     document.getElementById('nav-' + t).classList.remove('active');
   });
   document.getElementById('screen-' + tab).classList.add('active');
@@ -756,7 +759,7 @@ function renderJobList() {
     return `<div class="job-card ${cardCls}" onclick="openJob(${JSON.stringify(j.id)})">
       <div>
         <div class="job-num">${j.number}</div>
-        <div class="job-meta">${j.clientName} · ${j.type || ''}</div>
+        <div class="job-meta">${j.clientName || 'Unknown client'} · ${j.type || ''}</div>
         <div class="job-meta">${formatDate(j.date)}</div>
       </div>
       <div class="status-pill ${cls}">${label}${syncDot}</div>
@@ -1265,7 +1268,13 @@ function openClient(num, name, address) {
   document.getElementById('cd-name').textContent = name;
   document.getElementById('cd-address').textContent = address;
 
-  const clientJobs = jobs.filter(j => j.number && (j.number.startsWith(num + '-')));
+  const clientJobs = jobs.filter(j => {
+    if (!j.number) return false;
+    const parts = j.number.split('-');
+    const jClientNum = parseInt(parts[0]) || 0;
+    const thisClientNum = parseInt(num) || 0;
+    return jClientNum === thisClientNum;
+  });
   const el = document.getElementById('cd-job-list');
   if (!clientJobs.length) {
     el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray-500);font-size:14px">No jobs yet for this client</div>';
@@ -1334,7 +1343,14 @@ function renderClientList() {
     const name = c['Client Name'] || c.clientName || '';
     const address = c['Address'] || c.address || '';
     const paddedNum = String(parseInt(num) || 0).padStart(3,'0');
-    const jobCount = jobs.filter(j => j.number && (j.number.startsWith(paddedNum + '-') || j.number.startsWith(num + '-'))).length;
+    const rawNum = String(parseInt(num) || 0);
+    const jobCount = jobs.filter(j => {
+      if (!j.number) return false;
+      const parts = j.number.split('-');
+      const jClientNum = parseInt(parts[0]) || 0;
+      const thisClientNum = parseInt(num) || 0;
+      return jClientNum === thisClientNum;
+    }).length;
     return `<div class="list-item" style="cursor:pointer" onclick="openClient('${paddedNum}','${name.replace(/'/g,"\\'")}','${address.replace(/'/g,"\\'")}')"  >
       <div><div class="list-item-main">${name}</div><div class="list-item-sub">${address}</div><div class="list-item-sub" style="color:${jobCount>0?'var(--green)':'var(--gray-500)'}">${jobCount} job${jobCount !== 1 ? 's' : ''}</div></div>
       <div class="list-badge">${paddedNum}</div>
@@ -1480,6 +1496,9 @@ async function attemptSync() {
     } catch(e) { console.error('Sync error:', e); }
   }
 
+  // Remove synced jobs from local storage immediately — Sheet is the record
+  jobs = jobs.filter(j => !j.synced);
+  saveLocal();
   renderJobList();
   updateSyncBadge();
   showToast(`✓ Synced`);
