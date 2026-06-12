@@ -669,20 +669,36 @@ async function fetchSheetData() {
     if (jobsData.status === 'ok') {
       const remoteJobs = jobsData.data;
       remoteJobs.forEach(rj => {
-        const existing = jobs.find(j => j.number === rj['Job Number']);
+        const jobNum = rj['Job Number'] || rj['Job Number '];
+        if (!jobNum) return; // skip empty rows
+        const existing = jobs.find(j => j.number === jobNum);
         if (!existing) {
+          const status = rj['Status'];
+          const isSynced = status === 'Synced';
+          // Only import completed jobs if they are synced — skip to avoid re-showing them
+          // Import all non-synced rows as scheduled/actionable
+          if (isSynced) return;
           jobs.push({
-            id: rj['Job Number'],
-            number: rj['Job Number'],
-            clientName: rj['Client Name'],
-            address: rj['Address'],
-            type: rj['Job Type'],
-            date: rj['Date'],
-            staff: rj['Staff'],
-            status: rj['Status'] === 'Synced' ? 'complete' : 'scheduled',
-            synced: rj['Status'] === 'Synced',
-            fromSheet: true
+            id: jobNum,
+            number: jobNum,
+            clientNumber: rj['Client Number'] || jobNum.split('-')[0],
+            clientName: rj['Client Name'] || '',
+            address: rj['Address'] || '',
+            type: rj['Job Type'] || '',
+            date: rj['Date'] || '',
+            staff: rj['Staff'] || '',
+            status: 'scheduled',
+            synced: false,
+            fromSheet: true,
+            // Preserve any extra fields from sheet
+            sheetData: rj
           });
+        } else if (existing.fromSheet && existing.status === 'scheduled') {
+          // Update scheduled job details if Sheet has newer info
+          existing.clientName = rj['Client Name'] || existing.clientName;
+          existing.address = rj['Address'] || existing.address;
+          existing.type = rj['Job Type'] || existing.type;
+          existing.date = rj['Date'] || existing.date;
         }
       });
     }
